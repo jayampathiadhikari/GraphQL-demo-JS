@@ -2,15 +2,26 @@ var { graphqlHTTP } = require("express-graphql")
 var { buildSchema } = require("graphql")
 var express = require("express")
 
-
+/**
+ * Mutations and Input Types
+ * If you have an API endpoint that alters data, like inserting data into a database or altering data already in a database, 
+ * you should make this endpoint a Mutation rather than a Query.
+ */
 
 // Construct a schema, using GraphQL schema language
 // ! means that value cannot be null
 var schema = buildSchema(`
+
+  type Mutation {
+    setMessage(message: String): String
+  }
+
+
   type Query {
     hello (userId: Int!, name:String): User,
     random: [Int]
-    getDie(numSides: Int): RandomDie
+    getDie(numSides: Int): RandomDie,
+    getMessage: String
   }
 
   type User {
@@ -56,7 +67,16 @@ class User {
   }
 }
 
+var fakeDatabase = {}
+
 var root = {
+  setMessage: ({ message }) => {
+    fakeDatabase.message = message
+    return message
+  },
+  getMessage: () => {
+    return fakeDatabase.message
+  },
   hello: ({userId, name}) => {
     return new User(userId, name)
   },
